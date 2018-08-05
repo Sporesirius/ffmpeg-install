@@ -3,11 +3,12 @@
 # Script to install FFmpeg on GNU/Linux
 # Website: https://www.johnvansickle.com/ffmpeg/
 # Created by q3aql (q3aql@openmailbox.org)
+# Fork by Sporesirius
 # Builds by John Van Sickle (john.vansickle@gmail.com)
 # Licensed by GPL v.2
 # Date: 02-10-2016
 # --------------------------------------
-VERSION=1.2
+VERSION=1.3-fork
 
 URL=https://www.johnvansickle.com/ffmpeg/
 URL_RELEASES=https://johnvansickle.com/ffmpeg/releases/
@@ -44,7 +45,7 @@ case "$archs" in
          ARCH=64bit
     ;;
     *)
-    echo "Unsupported Arquitecture ($archs)"
+    echo "Unsupported architecture ($archs)"
     exit 0
 esac
 
@@ -55,35 +56,6 @@ esac
   else
     echo "You must install 'curl'."
   fi
-  
-# Check available downloaders (wget, axel or aria2c).
-  wget --help > /dev/null
-  if [ "$?" -eq 0 ] ; then
-    APP_DOWNLOAD='wget -c'
-    NAME_APP_DOWNLOAD="wget"
-  else
-    echo "wget disabled"
-  fi
-  
-  axel --help > /dev/null
-  if [ "$?" -eq 0 ] ; then
-    APP_DOWNLOAD='axel'
-    NAME_APP_DOWNLOAD="axel"
-  else
-    echo "axel disabled"
-  fi
-
-  aria2c --help > /dev/null
-  if [ "$?" -eq 0 ] ; then
-    APP_DOWNLOAD='aria2c --check-certificate=false'
-    NAME_APP_DOWNLOAD="aria2c"
-  else
-    echo "aria2c disabled"
-  fi
-
-  if [ "x$APP_DOWNLOAD" = "x" ] ; then
-     echo "Error: You must install 'wget' or 'axel' or 'aria2'."
-  fi
 
 #Install, update & uninstall FFmpeg
 case $1 in
@@ -92,7 +64,7 @@ case $1 in
      cd $TMP_DIR
      rm -rf ffmpeg-*
      if [ "$2" == "release" ] ; then
-       curl $URL | grep "$URL_RELEASES" | cut -d '"' -f 2 | grep "$ARCH" | head -1 > $TMP_DIR/ffmpeg-url
+       curl -s --connect-timeout 10 -S -L $URL | grep "$URL_RELEASES" | cut -d '"' -f 2 | grep "$ARCH" | head -1 > $TMP_DIR/ffmpeg-url
         if [ "$?" -eq 0 ] ; then
             echo "OK" > /dev/null
         else
@@ -101,7 +73,7 @@ case $1 in
             exit
         fi
      else
-       curl $URL | grep "$URL_BUILDS" | cut -d '"' -f 2 | grep "$ARCH" | head -1 > $TMP_DIR/ffmpeg-url
+       curl -s --connect-timeout 10 -S -L $URL | grep "$URL_BUILDS" | cut -d '"' -f 2 | grep "$ARCH" | head -1 > $TMP_DIR/ffmpeg-url
         if [ "$?" -eq 0 ] ; then
             echo "OK" > /dev/null
         else
@@ -112,9 +84,8 @@ case $1 in
      fi
       URL_PACKAGE=`cat $TMP_DIR/ffmpeg-url`
       NAME_PACKAGE=`cat /tmp/ffmpeg-url | cut -d "/" -f 6`
-      clear
-      echo "Downloading $NAME_PACKAGE ($NAME_APP_DOWNLOAD)"
-      $APP_DOWNLOAD $URL_PACKAGE
+      echo "Downloading $NAME_PACKAGE"
+      curl -s --connect-timeout 10 -S $URL_PACKAGE -o $NAME_PACKAGE
       if [ "$?" -eq 0 ] ; then
          echo "OK" > /dev/null
       else
@@ -122,12 +93,12 @@ case $1 in
          echo "Exiting..."
          exit
       fi
-      tar Jxvf $NAME_PACKAGE
-      cd ffmpeg-*
+      tar -Jxf $NAME_PACKAGE
+      rm -rf ffmpeg-*.tar.*
+      cd ffmpeg-*-static
       cp -rf ffmpeg $PATH_INSTALL
       cp -rf ffmpeg-10bit $PATH_INSTALL
       cp -rf ffprobe $PATH_INSTALL
-      cp -rf ffserver $PATH_INSTALL
       cd ..
       rm -rf ffmpeg-*
       echo "Done!"
@@ -167,5 +138,3 @@ case $1 in
       echo ""
       exit 0
 esac
-
-
