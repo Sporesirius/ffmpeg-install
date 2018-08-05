@@ -7,7 +7,7 @@
 # Builds by John Van Sickle (john.vansickle@gmail.com)
 # Licensed by GPL v.2
 # --------------------------------------
-VERSION=1.3-fork
+VERSION=1.4-fork
 
 URL=https://www.johnvansickle.com/ffmpeg/
 URL_RELEASES=https://johnvansickle.com/ffmpeg/releases/
@@ -35,8 +35,8 @@ else
 fi
 
 # Detect "arch" system
-archs=`uname -m`
-case "$archs" in
+arch=`uname -m`
+case "$arch" in
     i?86)
          ARCH=32bit
     ;;
@@ -44,7 +44,7 @@ case "$archs" in
          ARCH=64bit
     ;;
     *)
-    echo "Unsupported architecture ($archs)"
+    echo "Unsupported architecture ($arch)"
     exit 0
 esac
 
@@ -137,3 +137,5 @@ case $1 in
       echo ""
       exit 0
 esac
+
+
